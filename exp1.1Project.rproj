@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="RTarget" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{bea6169d-f4d9-4212-9a2c-42419300e099}</ProjectGuid>
+    <AssemblyName>exp1.1Project</AssemblyName>
+    <Name>exp1.1Project</Name>
+    <RootNamespace>exp1.1Project</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DataPrep\" />
+    <Folder Include="DataAnalysis" />
+    <Folder Include="ModelFitting" />
+    <Folder Include="ModelFitting\RegressionModelling" />
+    <Folder Include="GenericRoutines" />
+    <Folder Include="StaticData" />
+    <Folder Include="scripts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="correlations_all_stores.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataAnalysis\01a_category_subset_analysis.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataAnalysis\01_category_analysis.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataAnalysis\02_promotions_analysis.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataAnalysis\03_pricing_analysis.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataAnalysis\04_correlation_functions.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataAnalysis\05a_correlation_reporting.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataAnalysis\05_correlation_analysis.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataAnalysis\Script1.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataPrep\00_Zip_Raw.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataPrep\02_aggregate_category.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataPrep\01_consolidate_category.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataPrep\03_subset_topn_category.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataPrep\04_review_subset_.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataPrep\05_transform_sales_promos.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataPrep\06_prepare_regression_data.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataPrep\06_prepare_regression_data_functions.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataPrep\cleanse_stores.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataPrep\old_stuff.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="GenericRoutines\f_pricing_functions.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="ModelFitting\LoadData.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="ModelFitting\RegressionModelling\01_regression_run.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="ModelFitting\RegressionModelling\02_regression_functions_modelling.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="ModelFitting\RegressionModelling\03_regression_functions_diagnostics.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="ModelFitting\RegressionModelling\05_regression_analysis_1.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="ModelFitting\RegressionModelling\TS_Regression_functions.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Script1.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Script2.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Script3.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Script4.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Script6.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="Script7.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="scripts\install.packages.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="scripts\memory_usage.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="StaticData\ChainsMarketsStores.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="TASKS.R">
+      <SubType>Content</SubType>
+    </Content>
+  </ItemGroup>
+  <Target Name="RTarget">
+    <Message Text="Executing R script" />
+  </Target>
+</Project>
