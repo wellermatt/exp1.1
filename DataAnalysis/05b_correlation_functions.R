@@ -1,4 +1,84 @@
 library(Hmisc)
+
+
+#=========================================================================================
+#  correlations between stores per item, per chain - all promo & price variables
+#=========================================================================================
+
+# the correlation analysis for a category needs to be run at levels 1 and levels 2
+# level 1 will look at the correlations within a chain for each variable
+
+f_cor.within.chains = function() {
+	
+	upc.chains = unique(fc.items[lvl == 2,list(UPC,chain)])
+
+	# run correlation analysis within chains for each SKU
+	for (i in 1:nrow(upc.chains))
+	{
+		print(upc.chains[i])
+		dat.fi = merge(upc.chains[i], dat.cat[!is.na(IRI_KEY)], by = c("UPC","chain"))
+		
+		for (variable.name in variables.to.test) {
+			if(sum(dat.fi[,eval(variable.name), with = FALSE], na.rm=TRUE) != 0) {
+				cor.method = f_cor.choose.method(NULL, variable.name, 1)
+				mx.in = f_cor.prepare.matrix(dat.fi, variable.name, 1)
+				if (sum(colSums(mx.in,na.rm=T)>0)>1) {   # test to make sure we have more than one column with a non-zero value
+					if (exists("cor.output") && is.data.frame(cor.output))  {
+						cor.output = rbindlist(list(cor.output, f_cor.run(mx.in, cor.method, variable.name, upc.chains[i])))
+					} else {
+						cor.output = f_cor.run(mx.in, cor.method, variable.name, upc.chains[i])
+					}
+				}
+			}
+		}
+	}
+
+	cor.output$UPC = factor(cor.output$UPC)
+	cor.output = data.table(droplevels(cor.output))
+	setwd(pth.dropbox.data)
+	fil = paste("./iri analysis output/correlations/", par.category, ".intra.chain.correlations.rds", sep="")
+	saveRDS(cor.output, fil)
+}
+
+
+#=========================================================================================
+#  correlations between chains per item - all promo & price variables
+#=========================================================================================
+
+f_cor.between.chains = function() {
+	
+	upcs = unique(fc.items[lvl == 3,list(UPC)])
+
+	for (i in 1:nrow(upcs))
+	{
+		print(upcs[i])
+		dat.fi = droplevels(merge(upcs, dat.cat[is.na(IRI_KEY) & !is.na(chain)], by = c("UPC")))
+		for (variable.name in variables.to.test) {
+			if(sum(dat.fi[,eval(variable.name), with = FALSE], na.rm=TRUE) != 0) {
+				cor.method = f_cor.choose.method(NULL, variable.name, 2)
+				mx.in = f_cor.prepare.matrix(dat.fi, variable.name, 2)
+				if (sum(colSums(mx.in,na.rm=T)>0)>1) {   # test to make sure we have more than one column with a non-zero value
+					if (exists("cor.output") && is.data.table(cor.output)) {
+						cor.output = rbindlist(list(cor.output, f_cor.run(mx.in, cor.method, variable.name, upcs[i])))
+					} else {
+						cor.output = f_cor.run(mx.in, cor.method, variable.name, upcs[i])
+					}
+				}
+			}
+		}
+	}
+	cor.output$UPC = factor(cor.output$UPC)
+	cor.output = data.table(droplevels(cor.output))
+	setwd(pth.dropbox.data)
+	fil = paste("./iri analysis output/correlations/", par.category, ".cross.chain.correlations.rds", sep="")
+	saveRDS(cor.output, fil)
+}
+
+# generic functions to implement the correlations, including tasks such as:
+# - deciding the appropriate correlation method (spearman/pearson)
+# - preparing the input matrix for a single variable with different locations as columns
+# - generating a correlation matrix of p-values and the correlation statistic
+
 f_cor.choose.method = function(mx.in = NULL, variable.name, agg.level) {
 	
 	if (agg.level > 1) return('spearman') 
@@ -10,13 +90,14 @@ f_cor.prepare.matrix = function(dat.fi, variable.name, agg.level)
 	# IN: dat.fi - the data in long format for a single product.
 	# first stage is to cross-tabulate the data for a single variable, either with stores as column headings
 	if (agg.level == 1)	{
-		mx.in = cast(dat.fi, WEEK ~ IRI_KEY, fun.aggregate=sum, na.rm=TRUE, value = variable.name,add.missing=TRUE,fill=NA)
+		mx.in = dcast(dat.fi, WEEK ~ IRI_KEY, fun.aggregate=sum, na.rm=TRUE, value.var = variable.name)#,add.missing=TRUE,fill=NA)
   	}
 	# or chains as column headings
 	if (agg.level == 2) {
-		mx.in = cast(dat.fi, WEEK ~ chain, fun.aggregate = sum, na.rm=TRUE, value = variable.name, add.missing=TRUE, fill=NA)
+		mx.in = dcast(dat.fi, WEEK ~ chain, fun.aggregate = sum, na.rm=TRUE, value.var = variable.name)#, add.missing=TRUE, fill=NA)
   	}
 	mx.in$WEEK = as.integer(as.character(mx.in$WEEK))
+	weeks = data.table(WEEK = min(mx.in$WEEK):max(mx.in$WEEK))
 	mx.in = merge(weeks, mx.in, by = "WEEK", all.x=TRUE)
 	mx.in$WEEK = NULL
 	mx.in = as.matrix(mx.in)
@@ -44,6 +125,9 @@ f_cor.run = function(mx.in, cor.method, cor.variable, sku.chain, cor.plot = FALS
 	cor.output
  	
 }
+
+
+
 f_chain.cor.plot = function(ch, cor.variable, cor.set, mx)
 {
   this.mean = mean(cor.set$cor.set)  

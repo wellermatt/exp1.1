@@ -1,5 +1,5 @@
 library(data.table)
-setwd(pth.dropbox.data)
+#setwd(pth.dropbox.data)
 
 f_load.stores = function(){
 	stores <<- readRDS("./iri reference data/stores.clean.rds")

@@ -43,7 +43,7 @@
     <Content Include="DataAnalysis\03_pricing_analysis.R">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="DataAnalysis\04_correlation_functions.R">
+    <Content Include="DataAnalysis\05b_correlation_functions.R">
       <SubType>Content</SubType>
     </Content>
     <Content Include="DataAnalysis\05a_correlation_reporting.R">
@@ -82,13 +82,13 @@
     <Content Include="DataPrep\cleanse_stores.R">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="DataPrep\10_load_data_various.R">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="DataPrep\old_stuff.R">
       <SubType>Content</SubType>
     </Content>
     <Content Include="GenericRoutines\f_pricing_functions.R">
-      <SubType>Content</SubType>
-    </Content>
-    <Content Include="ModelFitting\LoadData.R">
       <SubType>Content</SubType>
     </Content>
     <Content Include="ModelFitting\RegressionModelling\01_regression_run.R">
