@@ -41,6 +41,49 @@ f_cor.within.chains = function() {
 }
 
 
+f_cor.within.chains.par = function() {
+	
+	# parallel version of the function to calculate corrrelations for all variables for all chains/items
+	
+	library("doSNOW")
+	upc.chains = unique(fc.items[lvl == 2,list(UPC,chain)])
+	cl <- makeCluster(8)
+	registerDoSNOW(cl) 
+	clusterExport(cl, c("%do%","foreach"))
+	clusterExport(cl, c("f_cor.prepare.matrix","f_cor.run", "f_cor.choose.method", "variables.to.test", "dat.cat"))
+	clusterExport(cl, c("upc.chains"),  envir=environment())
+	
+	# run correlation analysis within chains for each UPC/chain combination
+	cor.all =
+		foreach (i = 1:nrow(upc.chains),.packages = c("data.table","Hmisc","reshape2"),
+			.combine=function(x,y)rbindlist(list(x,y))) %dopar%
+		{
+			print(upc.chains[i])
+			dat.fi = merge(upc.chains[i], dat.cat[!is.na(IRI_KEY)], by = c("UPC","chain"))
+			
+			# run the correlation analysis for each variable
+			cor.item.chain =
+				foreach (variable.name = variables.to.test,
+ 					.combine=function(x,y)rbindlist(list(x,y))) %do%
+				{
+					if(sum(dat.fi[,eval(variable.name), with = FALSE], na.rm=TRUE) != 0) {
+						cor.method = f_cor.choose.method(NULL, variable.name, 1)
+						mx.in = f_cor.prepare.matrix(dat.fi, variable.name, 1)
+						if (sum(colSums(mx.in,na.rm=T)>0)>1) {   # test to make sure we have more than one column with a non-zero value
+							f_cor.run(mx.in, cor.method, variable.name, upc.chains[i])
+						}
+					}
+				}
+		}
+
+	cor.all$UPC = factor(cor.all$UPC)
+	cor.all = data.table(droplevels(cor.all))
+	setwd(pth.dropbox.data)
+	fil = paste("./iri analysis output/correlations/", par.category, ".intra.chain.correlations.rds", sep="")
+	saveRDS(cor.all, fil)
+	stopCluster(cl)
+}
+
 #=========================================================================================
 #  correlations between chains per item - all promo & price variables
 #=========================================================================================
@@ -72,6 +115,47 @@ f_cor.between.chains = function() {
 	setwd(pth.dropbox.data)
 	fil = paste("./iri analysis output/correlations/", par.category, ".cross.chain.correlations.rds", sep="")
 	saveRDS(cor.output, fil)
+}
+
+f_cor.between.chains.par = function() {
+	
+	# does not offer better performance as the overhead of copying the data out and setting upp the cluster 
+	# hampers things too much
+	
+	library("doSNOW")
+	upcs = unique(fc.items[lvl == 3,list(UPC)])
+	cl <- makeCluster(8)
+	registerDoSNOW(cl) 
+	clusterExport(cl, c("%do%","foreach"))
+	clusterExport(cl, c("f_cor.prepare.matrix","f_cor.run", "f_cor.choose.method", "variables.to.test", "dat.cat"))
+	clusterExport(cl, c("upcs"),  envir=environment())
+	
+	
+	# run correlation analysis across chains for each UPC combination
+	cor.all =
+		foreach (i = 1:nrow(upcs),.packages = c("data.table","Hmisc","reshape2"), .combine=function(x,y)rbindlist(list(x,y))) %dopar%
+		{
+			print(upcs[i])
+			dat.fi = droplevels(merge(upcs, dat.cat[is.na(IRI_KEY) & !is.na(chain)], by = c("UPC")))
+			cor.item.chain =
+				foreach (variable.name = variables.to.test,	.combine=function(x,y)rbindlist(list(x,y))) %do%
+				{
+					if(sum(dat.fi[,eval(variable.name), with = FALSE], na.rm=TRUE) != 0) {
+						cor.method = f_cor.choose.method(NULL, variable.name, 2)
+						mx.in = f_cor.prepare.matrix(dat.fi, variable.name, 2)
+						 # test to make sure we have more than one column with a non-zero value
+						if (sum(colSums(mx.in,na.rm=T)>0)>1) {  
+							f_cor.run(mx.in, cor.method, variable.name, upcs[i])
+						}
+					}
+				}
+		}
+	
+	cor.all$UPC = factor(cor.all$UPC)
+	cor.all = data.table(droplevels(cor.all))
+	setwd(pth.dropbox.data)
+	fil = paste("./iri analysis output/correlations/", par.category, ".cross.chain.correlations.rds", sep="")
+	saveRDS(cor.all, fil)
 }
 
 # generic functions to implement the correlations, including tasks such as:
@@ -120,7 +204,7 @@ f_cor.run = function(mx.in, cor.method, cor.variable, sku.chain, cor.plot = FALS
 	cor.p = melt(mx.p, varnames = c('fc.item1', 'fc.item2'), na.rm = TRUE) ; cor.p = cor.p[!is.na(cor.p$value),]
 	names(cor.r)[3] = "cor.stat"
 	names(cor.p)[3] = "test.stat"
-	cor.output = data.frame(sku.chain, variable.name = cor.variable, cor.r, test.stat = cor.p$test.stat)  
+	cor.output = data.table(sku.chain, variable.name = cor.variable, cor.r, test.stat = cor.p$test.stat)  
 	#if (cor.plot ==TRUE) f_chain.cor.plot(ch, cor.variable, cor.set, mx)    
 	cor.output
  	
