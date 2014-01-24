@@ -64,10 +64,13 @@
     <Content Include="DataPrep\01_consolidate_category.R">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="DataPrep\03a_aggregate_subset.R">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="DataPrep\03_subset_topn_category.R">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="DataPrep\04_review_subset_.R">
+    <Content Include="DataPrep\03b_review_subset_.R">
       <SubType>Content</SubType>
     </Content>
     <Content Include="DataPrep\05_transform_sales_promos.R">

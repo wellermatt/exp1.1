@@ -1,4 +1,6 @@
-library(data.table) ; library(ggplot2)  ; library(reshape)
+# this procedure will further subset the data based on taking the 
+
+library(data.table) ; library(ggplot2)  ; library(reshape2)
 
 rm(list=ls())  ;  options(width=200)
 machine = (Sys.info()["nodename"])
@@ -21,15 +23,15 @@ if (pth.dropbox == "/home/users/wellerm/") {
 #====================================================================
 # Source functions & Load data
 #====================================================================
-
+par.category = "beer"
 setwd(pth.dropbox.code)
 source("./StaticData/ChainsMarketsStores.R")
-#source("./ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")
 stores = f_load.stores.raw()
 
-par.category = "beer"
-f_wd.subsets.unformatted = function() setwd(paste(pth.dropbox.data,"iri category subsets/unformatted/", par.category,sep=""))
-f_wd.subsets.unformatted()
+setwd(paste(pth.dropbox.data, "iri category subsets/unformatted/", par.category,sep=""))
+
+#f_wd.subsets.unformatted = function() setwd()
+#f_wd.subsets.unformatted()
 
 # item summary
 skul.h = data.table(readRDS(paste(par.category,".subset.upc.store.horizon.rds", sep = "")))
@@ -38,22 +40,19 @@ names(sku.h)
 print(sku.h)
 ggplot(skul.h, aes(x=factor(max_consecutive_missing))) + geom_bar() + facet_wrap(~UPC) + ggtitle("Consecutive missing weeks: store count by SKU")
 
-
 # item location - subsetting rules
 stores
 skul.h = merge(skul.h, stores[,c(1:3), with =FALSE], by = "IRI_KEY")
-sku.chain = skul.h[num_weeks>=300 & max_consecutive_missing <= 2, list(store.count = length(unique(IRI_KEY))) , by = c("UPC","chain")]
-sku.chain = sku.chain[store.count>3, c(1,2), with = FALSE]
-skul.h = merge(skul.h[num_weeks>=300 & max_consecutive_missing <= 2], sku.chain, by = c("UPC","chain"))
-skul.h[num_weeks>=300 & max_consecutive_missing <= 2, list(store.count = length(unique(IRI_KEY))) , by = c("UPC","chain")]
-skul.h[,list(store.count = length(unique(IRI_KEY)), chain.count = length(unique(chain))), by = c("UPC")]
-sku.chain.store.count = data.table(cast(skul.h, chain ~ UPC))
+
+sku.chain = skul.h[, list(
+	market.count = length(unique(market)),
+	store.count = length(unique(IRI_KEY)),
+	chain.revenue = sum(revenue)) , by = c("UPC","chain")]
+sku.chain = sku.chain[store.count>3]
+sku.chain[order(-chain.revenue)]
 
 
-head(skul.h)
-names(skul.h)
-hist(sush$num_weeks)
+dcast(sku.chain, chain~UPC,sum, value.var = "chain.revenue")
 
 
-ggplot(skul.h, aes(x=num_weeks)) + geom_histogram() + facet_wrap(~UPC) + ggtitle("Number of weeks: store count by SKU")
-
+# this needs to be tied together with the correlations within the chains

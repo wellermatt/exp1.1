@@ -19,7 +19,7 @@ f.upc = function(par.category)
     data.table(droplevels(upc))
 }
 
-f.upc.top10.horizon = function(par.category, upc) {
+f.upc.top.n.horizon = function(par.category, upc) {
 	# function to get the UPCs which are the top sellers in terms of revenue within the category
 	# the function will read the aggregated revenue per UPC over the whole horizon and return the Top n items
 	fil.prefix = paste(pth.agg, par.category, "/", par.category,sep="")
@@ -104,7 +104,7 @@ f.subset.category = function(par.category, sku)
 f_main = function(par.category) {
 
 	upc = f.upc(par.category)
-	upc.top.n = f.upc.top10.horizon(par.category, upc)  # get the UPCs in scope
+	upc.top.n = f.upc.top.n.horizon(par.category, upc)  # get the UPCs in scope
 
 	sku = data.table(f.upc.store.horizon(par.category, upc.top.n))	# get the UPC/store combinations
 	setkeyv(sku, c("UPC","IRI_KEY"))

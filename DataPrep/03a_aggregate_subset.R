@@ -1,4 +1,23 @@
 rm(list=ls()) ; gc()
+options(width=200)
+machine = (Sys.info()["nodename"])
+
+pth.dropbox = "/home/users/wellerm/"
+if (machine == "M11") pth.dropbox = "C:/Users/Matt/Dropbox/"
+if (machine == "DESKTOP") pth.dropbox = "D:/Dropbox/Dropbox/"
+if (machine == "IDEA-PC") pth.dropbox = "C:/Users/welle_000/Dropbox/"
+
+pth.dropbox.data = paste(pth.dropbox, "HEC/IRI_DATA/", sep = "")
+pth.dropbox.code = paste(pth.dropbox, "HEC/Code/exp1.1/", sep = "")
+pth.subset.root = paste(pth.dropbox.data, "iri category subsets/unformatted/", sep = "")
+
+# if we are on the cluster then use the following paths
+if (pth.dropbox == "/home/users/wellerm/") {
+	pth.dropbox.data = paste(pth.dropbox, "IRI_DATA/", sep = "")
+	pth.dropbox.code = paste(pth.dropbox, "projects/exp1.1/", sep = "")
+	pth.subset.root = "/storage/users/wellerm/data/04_subset/"
+}
+
 
 #================ FUNCTION DEFINITIONS ========================
 f_consecutive.missing.values = function(weeks.avail) {
@@ -12,31 +31,25 @@ f_consecutive.missing.values = function(weeks.avail) {
 
 f_main = function(par.category) {
 
-pth.trans = paste("/storage/users/wellerm/data/04_subset/", par.category, "/", sep = "")
-pth.agg = paste("/storage/users/wellerm/data/04_subset/", par.category, "/", sep = "")
+	pth.subset = paste(pth.subset.root, par.category, "/", sep = "")
+	#pth.agg = paste(pth.subset, par.category, "/", sep = "")
+	setwd(pth.subset)
+	
+	fil =  paste(par.category, ".subset.rds", sep="") ; print(fil)
+	da = readRDS(fil)
+	setkeyv(da, c("IRI_KEY", "WEEK", "UPC"))
+	print(head(da))
+	print(nrow(da))
+	print(names(da))
+	tables()
 
-fil =  paste(pth.trans, par.category, ".subset.rds", sep="") ; print(fil)
-da = readRDS(fil)
-setkeyv(da, c("IRI_KEY", "WEEK", "UPC"))
-print(head(da))
-print(nrow(da))
-print(names(da))
-tables()
-
-#sapply(da,class)
-#da$IRI_KEY = as.integer(levels(da$IRI_KEY))[da$IRI_KEY]    # this is to correct an issue with length(unique(IRI_KEY)) only in the last procedure!
-#head(da$IRI_KEY)
-#lsos()
-
-
-if (par.summarise.data == TRUE) {
 	###### WEEKLY ITEM STATS
 	dat.upc.week = da[,j=list(revenue = sum(DOLLARS), 
 				units_sold = sum(UNITS), 
 				store_count = length(IRI_KEY)),
 				by=list(UPC,WEEK)]
 	dat.upc.week = dat.upc.week[with(dat.upc.week, order(-revenue)), ]
-	saveRDS(dat.upc.week, file = paste(pth.agg, par.category, ".subset.upc.week.rds", sep=""))
+	saveRDS(dat.upc.week, file = paste(par.category, ".subset.upc.week.rds", sep=""))
 	print("dat.upc.week") ; nrow(dat.upc.week)
 	dat.upc.week = NULL ; gc()
 
@@ -46,7 +59,7 @@ if (par.summarise.data == TRUE) {
 				item_count = length(UPC)),
 				by=list(IRI_KEY,WEEK)]
 	dat.store.week = dat.store.week[with(dat.store.week, order(-revenue)), ]
-	saveRDS(dat.store.week, file = paste(pth.agg, par.category, ".subset.store.week.rds", sep="")) ; 
+	saveRDS(dat.store.week, file = paste(par.category, ".subset.store.week.rds", sep="")) ; 
 	print("dat.store.week")  ; nrow(dat.store.week)
 	dat.store.week = NULL ; gc()
 	
@@ -59,7 +72,7 @@ if (par.summarise.data == TRUE) {
 				store_count = length(unique(IRI_KEY))),
 				by = WEEK]
 	dat.category.week = dat.category.week[with(dat.category.week, order(WEEK)),] 
-	saveRDS(dat.category.week, file = paste(pth.agg, par.category, ".subset.category.week.rds", sep=""))  
+	saveRDS(dat.category.week, file = paste(par.category, ".subset.category.week.rds", sep=""))  
 	dat.category.week = NULL; gc()
 	print("dat.category.week") ; nrow(dat.category.week)
 
@@ -73,7 +86,7 @@ if (par.summarise.data == TRUE) {
 				max_consecutive_missing = f_consecutive.missing.values(WEEK)),
 				by=list(IRI_KEY,UPC)]
 	dat.upc.store.horizon  = dat.upc.store.horizon [with(dat.upc.store.horizon , order(-revenue)), ]
-	saveRDS(dat.upc.store.horizon , file = paste(pth.agg, par.category, ".subset.upc.store.horizon.rds", sep=""))  
+	saveRDS(dat.upc.store.horizon , file = paste(par.category, ".subset.upc.store.horizon.rds", sep=""))  
 	print("dat.upc.store.horizon") ; nrow(dat.upc.store.horizon)
 	dat.upc.store.horizon  = NULL ; gc()
 
@@ -89,7 +102,7 @@ if (par.summarise.data == TRUE) {
 				max_consecutive_missing = f_consecutive.missing.values(WEEK)),
 				by = IRI_KEY]
 	dat.store.horizon = dat.store.horizon[with(dat.store.horizon, order(-revenue)),]
-	saveRDS(dat.store.horizon, file = paste(pth.agg, par.category, ".subset.store.horizon.rds", sep=""))   
+	saveRDS(dat.store.horizon, file = paste(par.category, ".subset.store.horizon.rds", sep=""))   
 	print("dat.store.horizon") ; nrow(dat.store.horizon)  
 	dat.store.horizon = NULL ; gc()
 
@@ -105,10 +118,10 @@ if (par.summarise.data == TRUE) {
 				max_consecutive_missing = f_consecutive.missing.values(WEEK)),
 				by = UPC]
 	dat.upc.horizon = dat.upc.horizon[with(dat.upc.horizon, order(-revenue)), ]
-	saveRDS(dat.upc.horizon, file = paste(pth.agg, par.category,".subset.upc.horizon.rds", sep=""))
+	saveRDS(dat.upc.horizon, file = paste(par.category,".subset.upc.horizon.rds", sep=""))
 	top.10.upc = dat.upc.horizon[1:10,1]  
 	da = NULL ; dat.upc.horizon = NULL ; gc()
-}
+
 }
 
 #=================== MAIN ===================
