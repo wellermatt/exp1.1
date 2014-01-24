@@ -1,29 +1,6 @@
-library(data.table)
+rm(list=ls()) ; gc()
 
-source("../scripts/memory_usage.R")
-args <- commandArgs(trailingOnly = TRUE)
-print (args)
-
-## define the parameters for this procedure
-par.category = "carbbev"  #args[1]  #
-par.summarise.data = TRUE
-
-pth.trans = paste("/storage/users/wellerm/data/04_subset/", par.category, "/", sep = "")
-pth.agg = paste("/storage/users/wellerm/data/04_subset/", par.category, "/", sep = "")
-
-## load the transformed data for the category (all years) and convert to a data table and output stats
-
-fil =  paste(pth.trans, par.category, ".subset.rds", sep="") ; print(fil)
-da = readRDS(fil)
-sapply(da,class)
-head(da)
-#da$IRI_KEY = as.integer(levels(da$IRI_KEY))[da$IRI_KEY]    # this is to correct an issue with length(unique(IRI_KEY)) only in the last procedure!
-head(da$IRI_KEY)
-nrow(da)
-names(da)
-tables()
-lsos()
-
+#================ FUNCTION DEFINITIONS ========================
 f_consecutive.missing.values = function(weeks.avail) {
 	y = rep(0, max(weeks.avail) - min(weeks.avail)+1) 
 	y[weeks.avail] = 1
@@ -32,6 +9,25 @@ f_consecutive.missing.values = function(weeks.avail) {
 	if (is.na(z)) z = 0
 	as.integer(z)
 }
+
+f_main = function(par.category) {
+
+pth.trans = paste("/storage/users/wellerm/data/04_subset/", par.category, "/", sep = "")
+pth.agg = paste("/storage/users/wellerm/data/04_subset/", par.category, "/", sep = "")
+
+fil =  paste(pth.trans, par.category, ".subset.rds", sep="") ; print(fil)
+da = readRDS(fil)
+setkeyv(da, c("IRI_KEY", "WEEK", "UPC"))
+print(head(da))
+print(nrow(da))
+print(names(da))
+tables()
+
+#sapply(da,class)
+#da$IRI_KEY = as.integer(levels(da$IRI_KEY))[da$IRI_KEY]    # this is to correct an issue with length(unique(IRI_KEY)) only in the last procedure!
+#head(da$IRI_KEY)
+#lsos()
+
 
 if (par.summarise.data == TRUE) {
 	###### WEEKLY ITEM STATS
@@ -111,9 +107,28 @@ if (par.summarise.data == TRUE) {
 	dat.upc.horizon = dat.upc.horizon[with(dat.upc.horizon, order(-revenue)), ]
 	saveRDS(dat.upc.horizon, file = paste(pth.agg, par.category,".subset.upc.horizon.rds", sep=""))
 	top.10.upc = dat.upc.horizon[1:10,1]  
+	da = NULL ; dat.upc.horizon = NULL ; gc()
 }
-lsos()
-da = NULL ; dat.upc.horizon = NULL ; gc()
+}
+
+#=================== MAIN ===================
+library(data.table)
 
 
-print ("===== SCRIPT COMPLETED =====")
+#source("../scripts/memory_usage.R")
+args <- commandArgs(trailingOnly = TRUE)
+print (args)
+
+#par.category = "carbbev"  #args[1]  #
+par.summarise.data = TRUE
+
+## define the parameters for this procedure
+categories = c("beer", "carbbev", "milk")
+## load the transformed data for the category (all years) and convert to a data table and output stats
+lapply(categories, f_main)
+
+#lsos()
+
+
+#=================== EOF ===================
+
