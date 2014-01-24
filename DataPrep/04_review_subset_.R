@@ -1,15 +1,34 @@
 library(data.table) ; library(ggplot2)  ; library(reshape)
 
+rm(list=ls())  ;  options(width=200)
 machine = (Sys.info()["nodename"])
-if (machine == "M11") pth.dropbox.data = "C:/Users/Matt/Dropbox/HEC/IRI_DATA/"
-if (machine == "DESKTOP") pth.dropbox.data = "D:/Dropbox/Dropbox/HEC/IRI_DATA/"
 
-setwd(pth.dropbox.data)
+options(echo=TRUE) # if you want see commands in output file
+args <- commandArgs(trailingOnly = TRUE)
+print(args)
+
+pth.dropbox = "/home/users/wellerm/"
+if (machine == "M11") pth.dropbox = "C:/Users/Matt/Dropbox/"
+if (machine == "DESKTOP") pth.dropbox = "D:/Dropbox/Dropbox/"
+if (machine == "IDEA-PC") pth.dropbox = "C:/Users/welle_000/Dropbox/"
+
+pth.dropbox.data = paste(pth.dropbox, "HEC/IRI_DATA/", sep = "")
+pth.dropbox.code = paste(pth.dropbox, "HEC/Code/exp1.1/", sep = "")
+if (pth.dropbox == "/home/users/wellerm/") {
+	pth.dropbox.data = paste(pth.dropbox, "IRI_DATA/", sep = "")
+	pth.dropbox.code = paste(pth.dropbox, "projects/exp1.1/", sep = "")
+}
+#====================================================================
+# Source functions & Load data
+#====================================================================
+
+setwd(pth.dropbox.code)
+source("./StaticData/ChainsMarketsStores.R")
+#source("./ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")
 stores = f_load.stores.raw()
 
 par.category = "beer"
 f_wd.subsets.unformatted = function() setwd(paste(pth.dropbox.data,"iri category subsets/unformatted/", par.category,sep=""))
-
 f_wd.subsets.unformatted()
 
 # item summary
@@ -17,7 +36,8 @@ skul.h = data.table(readRDS(paste(par.category,".subset.upc.store.horizon.rds", 
 sku.h = data.table(readRDS(paste(par.category,".subset.upc.horizon.rds", sep = "")))
 names(sku.h)
 print(sku.h)
-ggplot(skul.h, aes(x=max_consecutive_missing)) + geom_histogram() + facet_wrap(~UPC) + ggtitle("Consecutive missing weeks: store count by SKU")
+ggplot(skul.h, aes(x=factor(max_consecutive_missing))) + geom_bar() + facet_wrap(~UPC) + ggtitle("Consecutive missing weeks: store count by SKU")
+
 
 # item location - subsetting rules
 stores
