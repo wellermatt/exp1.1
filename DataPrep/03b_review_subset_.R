@@ -1,5 +1,9 @@
 # this procedure will further subset the data based on taking the 
 
+# we are looking to find the set of items and stores to satisfy our needs which are:
+
+# correlation of promotions, importance of chain, 
+
 library(data.table) ; library(ggplot2)  ; library(reshape2)
 
 rm(list=ls())  ;  options(width=200)
@@ -49,7 +53,7 @@ sku.chain = skul.h[, list(
 	store.count = length(unique(IRI_KEY)),
 	chain.revenue = sum(revenue)) , by = c("UPC","chain")]
 sku.chain = sku.chain[store.count>3]
-sku.chain[order(-chain.revenue)]
+sku.chain[order(UPC,-chain.revenue)]
 
 
 dcast(sku.chain, chain~UPC,sum, value.var = "chain.revenue")

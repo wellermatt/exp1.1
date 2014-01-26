@@ -1,19 +1,25 @@
 
-library(plyr) ; library(reshape); library(ggplot2) ; library(data.table)
+library(plyr) ; library(reshape2); library(ggplot2) ; library(data.table)
 rm(list = ls())
-
-
-
-options(width = 250)
-options(scipen=100)
-
+options(width = 250)  ;  options(scipen=100)
 machine = (Sys.info()["nodename"])
+
+pth.dropbox = "/home/users/wellerm/"
 if (machine == "M11") pth.dropbox = "C:/Users/Matt/Dropbox/"
 if (machine == "DESKTOP") pth.dropbox = "D:/Dropbox/Dropbox/"
+if (machine == "IDEA-PC") pth.dropbox = "C:/Users/welle_000/Dropbox/"
 
 pth.dropbox.data = paste(pth.dropbox, "HEC/IRI_DATA/", sep = "")
 pth.dropbox.code = paste(pth.dropbox, "HEC/Code/exp1.1/", sep = "")
+if (pth.dropbox == "/home/users/wellerm/") {
+	pth.dropbox.data = paste(pth.dropbox, "IRI_DATA/", sep = "")
+	pth.dropbox.code = paste(pth.dropbox, "projects/exp1.1/", sep = "")
+}
 
+## define the parameters for this procedure
+args <- commandArgs(trailingOnly = TRUE)
+print (args)
+par.category = args[1]    #;par.category = "beer"
 
 f_cor.results.load = function(agg.level = "intra.chain") {
 	
@@ -26,21 +32,35 @@ f_cor.results.load = function(agg.level = "intra.chain") {
 	readRDS(fil)
 }
 
-cor.output[,mean(cor.stat),by =c("chain","variable.name")]
-cast(cor.output, chain ~ variable.name, mean,value="cor.stat")
+cor.output = f_cor.results.load()
+#head(cor.output,20)
+
+variables.to.test = unique(cor.output$variable.name)
+
+
+cor.output[,mean(cor.stat),by =c("UPC","chain","variable.name")]
+dcast(cor.output, chain ~ UPC, mean,value.var="cor.stat")
 
 ggplot(data=cor.output, aes(x=variable.name, y = cor.stat)) + geom_boxplot() + coord_flip()
+
 ggplot(data=cor.output[variable.name %in% c("PRICE","PR")], aes(x=reorder(chain,cor.stat, FUN=median), y = cor.stat)) +
-	geom_boxplot() + facet_wrap( ~ variable.name) + 
+	geom_boxplot(fill="lightblue") + facet_wrap( ~ variable.name) + 
 	coord_flip() + xlab("Chain") + ylab("Correlation") + ggtitle("Correlation between stores of a Chain (Price variables)\n") + theme_bw()
+fil = paste("./iri analysis output/correlations/", par.category, ".PRICE.intra.chain.correlations.png", sep="")
+ggsave(fil)
 	
+		
 ggplot(data=cor.output[variable.name %in% grep("FEAT_",variables.to.test, value = TRUE) ], aes(x=reorder(chain,cor.stat, FUN=median), y = cor.stat)) +
-	geom_boxplot() + facet_wrap( ~ variable.name, nrow=1) + 
+	geom_boxplot(fill="lightgoldenrod1") + facet_wrap( ~ variable.name, nrow=1) + 
 	coord_flip() + xlab("Chain") + ylab("Correlation") + ggtitle("Correlation between stores of a Chain (Feature variables)\n") + theme_bw()
+fil = paste("./iri analysis output/correlations/", par.category, ".FEAT.intra.chain.correlations.png", sep="")
+ggsave(fil)
 	
 ggplot(data=cor.output[variable.name %in% grep("DISP_",variables.to.test, value = TRUE) ], aes(x=reorder(chain,cor.stat, FUN=median), y = cor.stat)) +
-	geom_boxplot() + facet_wrap( ~ variable.name, nrow=1) + 
+	geom_boxplot(fill="lightred") + facet_wrap( ~ variable.name, nrow=1) + 
 	coord_flip() + xlab("Chain") + ylab("Correlation") + ggtitle("Correlation between stores of a Chain (Display variables)\n") + theme_bw()
+fil = paste("./iri analysis output/correlations/", par.category, ".DISP.intra.chain.correlations.png", sep="")
+ggsave(fil)
 	
 cor.output$chain	
 cor.output[variable.name %in% grep("FEAT_",variables.to.test, value = TRUE) ]

@@ -49,14 +49,14 @@ f_cor.within.chains.par = function() {
 	upc.chains = unique(fc.items[lvl == 2,list(UPC,chain)])
 	cl <- makeCluster(8)
 	registerDoSNOW(cl) 
-	clusterExport(cl, c("%do%","foreach"))
+	clusterExport(cl, c("%do%","foreach", "dtcomb", "isplitDT"))
 	clusterExport(cl, c("f_cor.prepare.matrix","f_cor.run", "f_cor.choose.method", "variables.to.test", "dat.cat"))
 	clusterExport(cl, c("upc.chains"),  envir=environment())
 	
 	# run correlation analysis within chains for each UPC/chain combination
 	cor.all =
 		foreach (i = 1:nrow(upc.chains),.packages = c("data.table","Hmisc","reshape2"),
-			.combine=function(x,y)rbindlist(list(x,y))) %dopar%
+			.combine = "dtcomb", .multicombine = TRUE, .verbose =  TRUE) %dopar%  #function(x,y)rbindlist(list(x,y))
 		{
 			print(upc.chains[i])
 			dat.fi = merge(upc.chains[i], dat.cat[!is.na(IRI_KEY)], by = c("UPC","chain"))
@@ -64,14 +64,14 @@ f_cor.within.chains.par = function() {
 			# run the correlation analysis for each variable
 			cor.item.chain =
 				foreach (variable.name = variables.to.test,
- 					.combine=function(x,y)rbindlist(list(x,y))) %do%
+ 					.combine = "dtcomb", .multicombine = TRUE, .verbose =  TRUE) %do%     #function(x,y)rbindlist(list(x,y))
 				{
 					if(sum(dat.fi[,eval(variable.name), with = FALSE], na.rm=TRUE) != 0) {
 						cor.method = f_cor.choose.method(NULL, variable.name, 1)
 						mx.in = f_cor.prepare.matrix(dat.fi, variable.name, 1)
 						if (sum(colSums(mx.in,na.rm=T)>0)>1) {   # test to make sure we have more than one column with a non-zero value
 							f_cor.run(mx.in, cor.method, variable.name, upc.chains[i])
-						}
+						}						
 					}
 				}
 		}
@@ -185,6 +185,8 @@ f_cor.prepare.matrix = function(dat.fi, variable.name, agg.level)
 	mx.in = merge(weeks, mx.in, by = "WEEK", all.x=TRUE)
 	mx.in$WEEK = NULL
 	mx.in = as.matrix(mx.in)
+	if (variable.name == "PRICE") mx.in = diff(mx.in)
+	mx.in
 }
 
 f_cor.run = function(mx.in, cor.method, cor.variable, sku.chain, cor.plot = FALSE)

@@ -37,7 +37,7 @@ if (pth.dropbox == "/home/users/wellerm/") {
 setwd(pth.dropbox.code)
 source("./ModelFitting/RegressionModelling/02_regression_functions_modelling.R")
 source("./ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")
-
+source("./GenericRoutines/useful_functions.R")
 #====================================================================
 # Experiment options
 #====================================================================
@@ -50,19 +50,6 @@ for  (x in names(expt.design)) assign(x, expt.design[[x]])
 #====================================================================
 # Set up parallel environment
 #====================================================================
-isplitDT <- function(x, vals) {
-  ival <- iter(vals)
-  nextEl <- function() {
-    val <- nextElem(ival)
-    list(value=x[val], key=val)
-  }
-  obj <- list(nextElem=nextEl)
-  class(obj) <- c('abstractiter', 'iter')
-  obj
-}
-dtcomb <- function(...) {
-  rbindlist(list(...))
-}
 
 
 # prepare the parallel environment

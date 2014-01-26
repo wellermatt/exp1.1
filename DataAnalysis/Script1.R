@@ -9,3 +9,11 @@ dt.out = dt[, c(v1 = sum(v1),  lapply(.SD,mean)), by = grp, .SDcols = sd.cols]
 sd.cols = c("v1","v2", "v3")
 dt.out = dt[, list(sum.v1 = sum(v1), lapply(.SD,mean)), by = grp, .SDcols = sd.cols]
 dt.out = dt[, c(sum.v1 = sum(v1), lapply(.SD,mean)), by = grp, .SDcols = sd.cols]
+
+
+
+
+
+
+x = matrix(1:100,10)
+x;diff(x)

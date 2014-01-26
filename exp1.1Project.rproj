@@ -94,6 +94,9 @@
     <Content Include="GenericRoutines\f_pricing_functions.R">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="GenericRoutines\useful_functions.R">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="ModelFitting\RegressionModelling\01_regression_run.R">
       <SubType>Content</SubType>
     </Content>
