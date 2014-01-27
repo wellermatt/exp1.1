@@ -53,7 +53,8 @@ f_cor.within.chains.par = function() {
 	clusterExport(cl, c("f_cor.prepare.matrix","f_cor.run", "f_cor.choose.method", "variables.to.test", "dat.cat"))
 	clusterExport(cl, c("upc.chains"),  envir=environment())
 	
-	# run correlation analysis within chains for each UPC/chain combination
+	## run correlation analysis within chains for each UPC/chain combination
+	#dt.sub = isplitDT(sp, levels(sp$fc.item))
 	cor.all =
 		foreach (i = 1:nrow(upc.chains),.packages = c("data.table","Hmisc","reshape2"),
 			.combine = "dtcomb", .multicombine = TRUE, .verbose =  TRUE) %dopar%  #function(x,y)rbindlist(list(x,y))
