@@ -1,4 +1,4 @@
-setwd(pth.dropbox.data)
+# procedure to analyse 
 
 library("data.table") ; library("ggplot2") ; library("reshape2") ; library("scales")
 rm(list=ls())
@@ -21,16 +21,27 @@ if (pth.dropbox == "/home/users/wellerm/") {
 setwd(pth.dropbox.data)
 categories = c("beer", "carbbev", "milk")	
 
-f_load.fc.items = function(category) data.table(category = category, readRDS(paste("./iri category subsets/reformatted/", category, ".subset.fc.items.rds", sep = "")))
+f_load.fc.items = function(category) data.table(category = category, readRDS(paste0("./iri category subsets/reformatted/", category, ".subset.fc.items.rds")))
 fc.items = rbindlist(lapply(categories, f_load.fc.items))
 
-f_load.subset = function(category) data.table(category = category, readRDS(paste("./iri category subsets/unformatted/", category, "/", category, ".subset.rds", sep = "")))
+f_load.subset = function(category) data.table(category = category, readRDS(paste0("./iri category subsets/reformatted/", category, ".subset.sales.promos.weekly.rds")))
 subsets = rbindlist(lapply(categories, f_load.subset))
-setkeyv(subsets,c("category","IRI_KEY","UPC"))
-fci.1 = fc.items[lvl==1]
-setkeyv(fci.1, c("category","IRI_KEY", "UPC"))
-subsets = merge(subsets,fci.1)
-subsets
+setkeyv(subsets,c("fc.item","WEEK"))
+setkeyv(fc.items, c("fc.item"))
+ss = merge(subsets, fc.items[,list(fc.item,lvl,L9)], by ="fc.item")
+
+# at the ITEM level, calculate the means for promo variables and melt
+ss3 = ss[lvl == "ITEM"]  
+sdcols = c("PRICE","PR", grep("FEAT_|DISP_",names(ss3),value=TRUE))
+ss3.means = ss3[,lapply(.SD, mean,na.rm=TRUE),by = list(category,UPC,L9),.SDcols = sdcols]
+ss3.melt = data.table(melt(ss3.means))[variable!="PRICE"]
+
+# quick plot of the means of the promotional variables by item (aggregated to item level)
+qplot(data=ss3.melt, x= value, y = L9, colour = variable, geom="point") + facet_grid(category~.,scales="free_y",drop=TRUE,space="free")
+
+
+
+
 
 round(with(subsets, 100*prop.table(table(F,D, PR))), digits=2)
 format(with(subsets, prop.table(table(F,D, PR))), digits=2)

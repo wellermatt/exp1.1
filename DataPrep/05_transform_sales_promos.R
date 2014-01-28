@@ -24,7 +24,10 @@ f_cleanse.data.1 = function(dat, upc = as.character(NA))
 	
 	dat$year	= NULL							# drop the year column for this analysis
 	dat			= dat[IRI_KEY %in% stores$IRI_KEY]  # filter out any stores that are not in our master list
-	dat$PRICE	= dat$DOLLARS/dat$UNITS
+	
+	# update any zeros in sales/price to NA
+	dat[UNITS <= 0 | DOLLARS <= 0,c("UNITS","DOLLARS"):=NA] 
+	dat[,PRICE:= (DOLLARS/UNITS)]
 	
 	# extend the data to every period
 	sku.span = dat[,list(first.period = min(WEEK), last.period = max(WEEK)), by = list(UPC,IRI_KEY)]
@@ -60,7 +63,7 @@ f_cleanse.data.2 = function(dat)
 	dat 
 }
 
-f_load.fc.items = function(dat)
+f_generate.fc.items = function(dat)
 ## FURTHER DATA MANIPULATION, CREATION OF UNIQUE FORECAST ITEMS TABLE
 # very much hard coded to a 3 level hierarchy of store, chain, item WITHOUT market
 {	
@@ -85,6 +88,12 @@ f_load.fc.items = function(dat)
 	
 	# merge the 3 levels together to form the fc.items listing
 	fc.items = rbind(fc.items, tmp.2,tmp.3)
+	
+	# merge with the products file to get the product description
+	upc.master = f_load.products(par.category)
+	fc.items = merge(fc.items, upc.master, by = "UPC")
+	fc.items[,lvl:=ordered(lvl,levels = c(1,2,3), labels = c("STORE","CHAIN","ITEM"))]
+	fc.items[, lvl := factor(lvl,levels(lvl)[c(3,1,2)])]
 	keycols = c("fc.item") ; setkeyv(fc.items,keycols)
 	fc.items
 }
@@ -203,6 +212,8 @@ if (pth.dropbox == "/home/users/wellerm/") {
 	pth.dropbox.code = paste(pth.dropbox, "projects/exp1.1/", sep = "")
 }
 
+setwd(pth.dropbox.code)  ;  source("./DataPrep/10_load_data_various.R")
+
 categories = c("beer","carbbev","milk")
 for (par.category in categories)
 {
@@ -217,7 +228,7 @@ for (par.category in categories)
 	stores = f_load.stores.clean()
 	dat.cat.1 = f_cleanse.data.1(dat.cat.1)    # this will create the fc.item field and tags on the chain and market which are used for aggregation
 	dat.cat.1 = f_cleanse.data.2(dat.cat.1)    # this will subset further based on the summary stats of the subset
-	fc.items = f_load.fc.items(dat.cat.1)
+	fc.items = f_generate.fc.items(dat.cat.1)
 	fc.items[,.N,by=list(lvl)]
 
 	sp.cat.1 = f_level1_promo_dummies(dat.cat.1)
