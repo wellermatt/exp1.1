@@ -13,7 +13,7 @@ f_load.calendar = function(){
 	calendar.weekly.lead.lag <<- readRDS("./iri reference data/calendar/calendar.weekly.lead.lag.rds")
 	calendar.445.lead.lag <<- readRDS("./iri reference data/calendar/calendar.445.lead.lag.rds")
 	cols.to.drop.445 = grep("_LEAD1|_LAG1",names(calendar.445.lead.lag), value = TRUE)
-	calendar.445 <<- calendar.445.lead.lag
+	calendar.445 <<- readRDS("./iri reference data/calendar/calendar.445.rds")
 	calendar.445[,(cols.to.drop.445) := NULL]
 }
 
@@ -39,7 +39,7 @@ f_load.products = function(category, opt.fieldset = 1) {
 	setwd(pth.dropbox.data)
 	fil = paste("./iri reference data/items/prod_",par.category,".csv", sep = "")
 	upc.master = data.table(read.csv(fil, stringsAsFactors=FALSE))
-	if (opt.fieldset == 1) return(upc.master[, list(UPC,L9)])
+	if (opt.fieldset == 1) return(upc.master[, list(UPC,L9,VOL_EQ)])
 	
 }
 

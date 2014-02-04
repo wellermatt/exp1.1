@@ -82,6 +82,9 @@
     <Content Include="DataPrep\06_prepare_regression_data_functions.R">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="DataPrep\calendar_functions.R">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="DataPrep\cleanse_stores.R">
       <SubType>Content</SubType>
     </Content>
@@ -110,6 +113,9 @@
       <SubType>Content</SubType>
     </Content>
     <Content Include="ModelFitting\RegressionModelling\TS_Regression_functions.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="ModelFitting\RegressionModelling\xx_regression_testing.R">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Script1.R">
