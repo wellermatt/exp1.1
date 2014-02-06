@@ -2,52 +2,11 @@
 # of time series through the temporal hierarchy of days, weeks, months
 
 #
-
-library("data.table") ; library("zoo") ; library("reshape2")
-library("dummies") ; library("TimeProjection")
-
-machine = (Sys.info()["nodename"])
-
-pth.dropbox = "/home/users/wellerm/"
-if (machine == "M11") pth.dropbox = "C:/Users/Matt/Dropbox/"
-if (machine == "DESKTOP") pth.dropbox = "D:/Dropbox/Dropbox/"
-if (machine == "IDEA-PC") pth.dropbox = "C:/Users/welle_000/Dropbox/"
-
-pth.dropbox.data = paste(pth.dropbox, "HEC/IRI_DATA/", sep = "")
-pth.dropbox.code = paste(pth.dropbox, "HEC/Code/exp1.1/", sep = "")
-if (pth.dropbox == "/home/users/wellerm/") {
-	pth.dropbox.data = paste(pth.dropbox, "IRI_DATA/", sep = "")
-	pth.dropbox.code = paste(pth.dropbox, "projects/exp1.1/", sep = "")
-}
-
-
+library("data.table")
 
 # build the daily calendar, it needs the holidays added
 
-hols.seq = c("NYE","Superbowl","Presidents","Easter","Memorial","Independence","Labor","Halloween","Thanksgiving","Xmas")
-#hols.seq = paste("hol_", hols.seq, sep="")
-
-f_cal.holidays.us.get = function()
-{
-	# function to read the holidays from file and store it in long format
-	# assumes the working directory is already set to pth.dropbox.data	
-	setwd(pth.dropbox.data)
-	holidays.us = read.csv(file="./iri reference data/calendar/US Holidays.csv",header=TRUE,stringsAsFactors=FALSE)
-	
-	holidays.us[,1]=NULL	# the input file contains a long namme for the holiday which we don't need
-	holidays.us[,2]=NULL	# not interested in holidays from 2000
-
-	holidays.us$Hol_Short = factor(holidays.us$Hol_Short)
-  
-	hols.melt = data.table(melt(holidays.us, variable.name = "cal.year", value.name = "cal.date", id="Hol_Short"))
-	hols.melt[, cal.date:= as.Date(cal.date,format = "%d-%b-%y" )]
-	hols.melt[, cal.year := as.integer(sub("X", "", cal.year))]
-
-    hols.melt[,list(Hol_Short,cal.date)]
-}
-
-
-f_calendar.daily_build = function(opt.holiday.dummies = TRUE, opt.date.attributes = FALSE)
+f_calendar.daily_build = function()
 {
 	start.date = as.Date("2001-01-01")
 	end.date = as.Date("2006-12-31")
@@ -55,66 +14,21 @@ f_calendar.daily_build = function(opt.holiday.dummies = TRUE, opt.date.attribute
 
 	calendar.daily = data.table(
 		cal.date = as.Date(seq(from = start.date, to = end.date, by = "day")), 
-		WEEK = as.integer(rep(1:num.weeks,each=7)), key = "cal.date")
-	
-	
-	if (opt.holiday.dummies == TRUE) {
-		# now get the holidays and add them in as dummies
-		hols.melt = f_cal.holidays.us.get()
-		setnames(hols.melt,1, "hol_")
-		hols.melt = data.table(dummy.data.frame(hols.melt), key = "cal.date")
-		calendar.daily = merge(calendar.daily, hols.melt, all.x=TRUE)
-		for (j in names(calendar.daily)) set(calendar.daily,which(is.na(calendar.daily[[j]])),j,0L)
-	}
-	if (opt.date.attributes == TRUE) {
-		calendar.daily = cbind(calendar.daily, projectDate(calendar.daily$cal.date))
-	}
-	
-	return(calendar.daily)
+		WEEK = as.integer(rep(1:num.weeks,each=7)))
+	calendar.daily = cbind(calendar.daily, projectDate(calendar.daily$cal.date))
+	calendar.daily
 }
+
+seq(start.date,end.date, by ="day")
 # TEST 
 f_calendar.daily_build()
 
+head(spw)
 
-num.weeks = 10
-
-dat.weekly = data.table(
-	week.ending = seq(from = as.Date("2001-1-7"), by = "week", length.out = num.weeks),
-	n1 = rnorm(num.weeks, 100,10), 
-	n2 = rnorm(num.weeks, 100, 10), 
-	d3 = sample(c(0,0,0,1),num.weeks,replace=TRUE)) 
-dat.weekly
-
-day.weights = matrix(c(rep(1/7,7),rep(1/7,7),rep(1L,7)),nrow=7)
-day.weights
-
-library("foreach")
-
-# use foreach to apply the daily weights to split out the weekly values to days
-# some weights have the effect of keeping the dummy identical across all 7 days
-# other weights have the effect of splitting a sum (e.g. total revenue) over 7 days
-dat.daily = foreach (i = 2:4, .combine = "cbind") %do%
-{
-	as.vector(outer(
-		day.weights[,i-1],
-		unlist(dat.weekly[,c(i),with=FALSE])))
-}
-
-dates = do.call("c", lapply(dat.weekly$week.ending,function(x)seq(as.Date(x)-6,length.out=7, by="day")))
-dat.daily = data.table(dates, dat.daily)
-setnames(dat.daily, c("cal.date",names(dat.weekly)[-1]))
-
-dat.daily
+y = spw[fc.item=="00-01-18200-53030",UNITS]
 
 
-
-
-
-
-y = ssw[fc.item=="00-01-18200-53030",UNITS]
-
-plot(y)
-
+library("tempdisagg"); library("zoo")
 
 f_ts.agg.weeks.to.days = function(y)
 {
@@ -124,7 +38,7 @@ f_ts.agg.weeks.to.days = function(y)
 	z.daily = merge(
 		z.weekly, 
 		foo=zooreg(NA, order.by=seq(start(z.weekly), end(z.weekly)+6,"day")))[,1]
-	z.daily = na.locf(z.daily, method = "constant", na.rm = FALSE)
+	z.daily = na.locf(y.daily, method = "constant", na.rm = FALSE)
 	z.daily
 }
 
@@ -141,18 +55,11 @@ f_ts.agg.weeks.to.months = function(y)
 	z.monthly	
 }
 
-ssw
+vignette(package = "zoo") 
 
 y.mon = f_ts.agg.weeks.to.months(y)
-library("forecast") ; library("tseries")
-
-seasonplot(ts(y.mon,frequency=12),col=rainbow(6),year.labels=TRUE,xlim=c(0,16000))
-monthplot(ts(y.mon,frequency=12))
-plot(stl(y.mon,s.window="periodic"))
-stl(y.mon,s.window="periodic")
-adf.test(as.numeric(y.mon))
-ets(y.mon)
-tbats(ts(y.mon,frequency=12))
+library(forecast)
+seasonplot(y.mon)
 
 # load the weekly calendar
 setwd(pth.dropbox.data)
@@ -164,7 +71,7 @@ calendar.iri = readRDS("./iri reference data/calendar/calendar.weekly.rds")
 
 
 
-names(calendar.iri)
+
 
 
 
@@ -195,6 +102,29 @@ projectDate(as.Date(dates))
 require(xts) ; require(reshape2) 
 library(data.table) ; library(ggplot2)
 library(plyr)
+
+hols.seq = c("NYE","Superbowl","Presidents","Easter","Memorial","Independence","Labor","Halloween","Thanksgiving","Xmas")
+#hols.seq = paste("hol_", hols.seq, sep="")
+
+f_calendar.holidays.us.get = function()
+{
+	# function to read the holidays from file and store it in long format
+	# assumes the working directory is already set to pth.dropbox.data
+	
+	setwd(pth.dropbox.data)
+	holidays.us = read.csv(file="./iri reference data/calendar/US Holidays.csv",header=TRUE,stringsAsFactors=FALSE)
+	
+	holidays.us[,1]=NULL	# the input file contains a long namme for the holiday which we don't need
+	holidays.us[,2]=NULL	# not interested in holidays from 2000
+
+	holidays.us$Hol_Short = factor(holidays.us$Hol_Short)
+  
+	hols.melt = data.table(melt(holidays.us, variable.name = "cal.year", value.name = "cal.date", id="Hol_Short"))
+	hols.melt[, cal.date:= as.Date(cal.date,format="%d-%b-%y" )]
+	hols.melt[, cal.year := as.integer(sub("X", "", cal.year))]
+
+    hols.melt
+}
 
 f_calendar.weekly.holidays = function(hols.us)
 {	

@@ -4,7 +4,6 @@
 #
 
 library("data.table") ; library("zoo") ; library("reshape2")
-library("dummies") ; library("TimeProjection")
 
 machine = (Sys.info()["nodename"])
 
@@ -40,14 +39,14 @@ f_cal.holidays.us.get = function()
 	holidays.us$Hol_Short = factor(holidays.us$Hol_Short)
   
 	hols.melt = data.table(melt(holidays.us, variable.name = "cal.year", value.name = "cal.date", id="Hol_Short"))
-	hols.melt[, cal.date:= as.Date(cal.date,format = "%d-%b-%y" )]
+	hols.melt[, cal.date:= as.Date(cal.date,format="%d-%b-%y" )]
 	hols.melt[, cal.year := as.integer(sub("X", "", cal.year))]
 
-    hols.melt[,list(Hol_Short,cal.date)]
+    hols.melt
 }
 
 
-f_calendar.daily_build = function(opt.holiday.dummies = TRUE, opt.date.attributes = FALSE)
+f_calendar.daily_build = function()
 {
 	start.date = as.Date("2001-01-01")
 	end.date = as.Date("2006-12-31")
@@ -55,61 +54,16 @@ f_calendar.daily_build = function(opt.holiday.dummies = TRUE, opt.date.attribute
 
 	calendar.daily = data.table(
 		cal.date = as.Date(seq(from = start.date, to = end.date, by = "day")), 
-		WEEK = as.integer(rep(1:num.weeks,each=7)), key = "cal.date")
-	
-	
-	if (opt.holiday.dummies == TRUE) {
-		# now get the holidays and add them in as dummies
-		hols.melt = f_cal.holidays.us.get()
-		setnames(hols.melt,1, "hol_")
-		hols.melt = data.table(dummy.data.frame(hols.melt), key = "cal.date")
-		calendar.daily = merge(calendar.daily, hols.melt, all.x=TRUE)
-		for (j in names(calendar.daily)) set(calendar.daily,which(is.na(calendar.daily[[j]])),j,0L)
-	}
-	if (opt.date.attributes == TRUE) {
-		calendar.daily = cbind(calendar.daily, projectDate(calendar.daily$cal.date))
-	}
-	
-	return(calendar.daily)
+		WEEK = as.integer(rep(1:num.weeks,each=7)))
+	calendar.daily = cbind(calendar.daily, projectDate(calendar.daily$cal.date))
+	calendar.daily
 }
 # TEST 
 f_calendar.daily_build()
 
 
-num.weeks = 10
 
-dat.weekly = data.table(
-	week.ending = seq(from = as.Date("2001-1-7"), by = "week", length.out = num.weeks),
-	n1 = rnorm(num.weeks, 100,10), 
-	n2 = rnorm(num.weeks, 100, 10), 
-	d3 = sample(c(0,0,0,1),num.weeks,replace=TRUE)) 
-dat.weekly
-
-day.weights = matrix(c(rep(1/7,7),rep(1/7,7),rep(1L,7)),nrow=7)
-day.weights
-
-library("foreach")
-
-# use foreach to apply the daily weights to split out the weekly values to days
-# some weights have the effect of keeping the dummy identical across all 7 days
-# other weights have the effect of splitting a sum (e.g. total revenue) over 7 days
-dat.daily = foreach (i = 2:4, .combine = "cbind") %do%
-{
-	as.vector(outer(
-		day.weights[,i-1],
-		unlist(dat.weekly[,c(i),with=FALSE])))
-}
-
-dates = do.call("c", lapply(dat.weekly$week.ending,function(x)seq(as.Date(x)-6,length.out=7, by="day")))
-dat.daily = data.table(dates, dat.daily)
-setnames(dat.daily, c("cal.date",names(dat.weekly)[-1]))
-
-dat.daily
-
-
-
-
-
+head(spw)
 
 y = ssw[fc.item=="00-01-18200-53030",UNITS]
 
@@ -164,7 +118,7 @@ calendar.iri = readRDS("./iri reference data/calendar/calendar.weekly.rds")
 
 
 
-names(calendar.iri)
+
 
 
 

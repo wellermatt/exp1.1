@@ -22,6 +22,8 @@
     <Folder Include="DataPrep\" />
     <Folder Include="DataAnalysis" />
     <Folder Include="ModelFitting" />
+    <Folder Include="ModelFitting\ets" />
+    <Folder Include="ModelFitting\Validation" />
     <Folder Include="ModelFitting\RegressionModelling" />
     <Folder Include="GenericRoutines" />
     <Folder Include="StaticData" />
@@ -100,6 +102,9 @@
     <Content Include="GenericRoutines\useful_functions.R">
       <SubType>Content</SubType>
     </Content>
+    <Content Include="ModelFitting\ets\ets_functions.R">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="ModelFitting\RegressionModelling\01_regression_run.R">
       <SubType>Content</SubType>
     </Content>
@@ -116,6 +121,12 @@
       <SubType>Content</SubType>
     </Content>
     <Content Include="ModelFitting\RegressionModelling\xx_regression_testing.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="ModelFitting\Validation\cv.ts.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="ModelFitting\Validation\forecast functions.R">
       <SubType>Content</SubType>
     </Content>
     <Content Include="Script1.R">
