@@ -1,15 +1,17 @@
 library(zoo)
 
+
+
 Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]
 }
 
-library(data.table)
+library(data.table) ; library(plyr)
 f_reference.prices = function(pt)
 {
   # set parameters for algorithm
-  l = 5
+  l = 8
   C = 1/3
   a = 0.5
   
@@ -19,7 +21,7 @@ f_reference.prices = function(pt)
   }  
   
   # create df to hold the data during the run
-  dt = data.table(pt, pm = 0, pr = 0, ft = 0)
+  dt = data.table(pt, pm = NA, pr = NA, ft = NA)
   
   TT = length(pt)
   # first pass will calculate the mode value for each period in the price data series
@@ -31,8 +33,8 @@ f_reference.prices = function(pt)
                     ft = (sum(x > 0))/(2 * l + 1)
                     data.frame(pm, ft)
                   } else  {
-                    pm = 0
-                    ft = 0
+                    pm = NA
+                    ft = NA
                     data.frame(pm, ft) }#function(x1)x1^2)
                 })
   dt$pm[(1+l):(TT - l)] = pass1$pm
@@ -68,8 +70,9 @@ f_reference.prices = function(pt)
     RP.set = intersect(R.set, P.set)
     if (length(RP.set) > 0) dt$pr[RP.set] = dt$pt[RP.set - 1]
   }
-  dt = dt[-c(1:l,(TT-l+1):TT),]
+  #dt = dt[-c(1:l,(TT-l+1):TT),]
   dt$price.discount = dt$pt - dt$pr
+	dt$price.discount[is.na(dt$pt)]=NA
 	dt$ft=NULL ; dt$pm = NULL
 	dt$period = as.integer(rownames(dt))
   dt
@@ -78,11 +81,15 @@ f_reference.prices = function(pt)
 
 #testing
 library(reshape2)
-sp1= sp[UPC =="00-01-12000-00053" & chain =="108" & !is.na(IRI_KEY)]
-prices = data.table(dcast(sp1, WEEK~IRI_KEY, value.var = "PRICE", fun.aggregate = sum, na.rm=TRUE))
+
+ssw = spw[fc.item == "00-01-18200-53030"]
+items = spw[!is.na(IRI_KEY),as.character(unique(fc.item))]
+
+
+prices = data.table(dcast(spw, WEEK~IRI_KEY, value.var = "PRICE", fun.aggregate = sum, na.rm=TRUE))
 
 prices
-prices2 = rbindlist(lapply(2:9,function(i)data.table(IRI_KEY = names(prices)[i], f_reference.prices(prices[[i]]))))
+prices2 = rbindlist(lapply(2:10,function(i)data.table(IRI_KEY = names(prices)[i], f_reference.prices(prices[[i]]))))
 
 #prices2 = f_reference.prices(prices[[2]])
 #prices2$period= as.integer(rownames(prices2))

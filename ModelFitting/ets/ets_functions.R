@@ -1,6 +1,7 @@
 library("forecast") ; library("xts")
 ssm = spm[fc.item == "00-01-18200-53030"]
 ssw = spw[fc.item == "00-01-18200-53030"]
+items = spw[!is.na(IRI_KEY),as.character(unique(fc.item))]
 
 
 
