@@ -26,11 +26,19 @@
     <Folder Include="ModelFitting\Validation" />
     <Folder Include="ModelFitting\RegressionModelling" />
     <Folder Include="GenericRoutines" />
+    <Folder Include="DataAdaptor" />
+    <Folder Include="junk" />
     <Folder Include="StaticData" />
     <Folder Include="scripts" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="correlations_all_stores.R">
+    <Content Include="config.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataAdaptor\00_data_adaptor_test.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="DataAdaptor\10_load_data_various.R">
       <SubType>Content</SubType>
     </Content>
     <Content Include="DataAnalysis\01a_category_subset_analysis.R">
@@ -90,13 +98,13 @@
     <Content Include="DataPrep\cleanse_stores.R">
       <SubType>Content</SubType>
     </Content>
-    <Content Include="DataPrep\10_load_data_various.R">
-      <SubType>Content</SubType>
-    </Content>
     <Content Include="DataPrep\old_stuff.R">
       <SubType>Content</SubType>
     </Content>
     <Content Include="GenericRoutines\f_pricing_functions.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="GenericRoutines\pricing_tests.R">
       <SubType>Content</SubType>
     </Content>
     <Content Include="GenericRoutines\useful_functions.R">
@@ -127,24 +135,6 @@
       <SubType>Content</SubType>
     </Content>
     <Content Include="ModelFitting\Validation\forecast functions.R">
-      <SubType>Content</SubType>
-    </Content>
-    <Content Include="Script1.R">
-      <SubType>Content</SubType>
-    </Content>
-    <Content Include="Script2.R">
-      <SubType>Content</SubType>
-    </Content>
-    <Content Include="Script3.R">
-      <SubType>Content</SubType>
-    </Content>
-    <Content Include="Script4.R">
-      <SubType>Content</SubType>
-    </Content>
-    <Content Include="Script6.R">
-      <SubType>Content</SubType>
-    </Content>
-    <Content Include="Script7.R">
       <SubType>Content</SubType>
     </Content>
     <Content Include="scripts\install.packages.R">

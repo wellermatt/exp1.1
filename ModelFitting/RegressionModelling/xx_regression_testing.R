@@ -22,34 +22,6 @@ if (pth.dropbox == "/home/users/wellerm/") {
 #====================================================================
 # Source functions & Load data
 #====================================================================
-setwd(pth.dropbox.code)
-source("./10_load_data_various.R") ; f_load.calendar()
-
-par.category = "beer" ; par.periodicity = "445"	
-setwd(pth.dropbox.data)
-
-# get the input data for the regressions
-if (FALSE == TRUE) {
-	
-	fil = paste("./regression datasets/", par.category, ".regression.data.", par.periodicity, ".rds", sep= "")
-	sp = readRDS(fil)
-	sp = sp[UPC=="00-01-18200-53030"]
-	
-	sp[,fc.item:=factor(fc.item)]
-	fil = paste("./regression datasets/", par.category, ".test.regression.data.", par.periodicity, ".rds", sep= "")
-	saveRDS(sp,fil)
-}
-
-par.periodicity = "445"	
-fil = paste("./regression datasets/", par.category, ".test.regression.data.", par.periodicity, ".rds", sep= "")
-#TESTING fil = paste("./regression datasets/", par.category, ".regression.data.", par.periodicity, ".TEST.rds", sep= "")
-spm = readRDS(fil)
-
-par.periodicity = "weekly"	
-fil = paste("./regression datasets/", par.category, ".test.regression.data.", par.periodicity, ".rds", sep= "")
-#TESTING fil = paste("./regression datasets/", par.category, ".regression.data.", par.periodicity, ".TEST.rds", sep= "")
-spw = readRDS(fil)
-#sp$chain
 
 library(data.table)
 store.stats = spw[!is.na(IRI_KEY), 
