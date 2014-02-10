@@ -1,7 +1,7 @@
 
 cd ~/projects/exp1.1/DataPrep
 #$ -S /bin/bash
-#$ -l h_vmem=7.0G
+#$ -l h_vmem=20.0G
 #$ -m e
 #$ -M wellermatt@hotmail.com
 #$ -q serial
@@ -14,8 +14,10 @@ module add R
 
 echo Job running on compute node `uname -n`
 
-R CMD BATCH --no-save 01_consolidate_category.R ../output/01_consolidate_category.output
+Rscript --vanilla 01_consolidate_category.R "saltsnck"
 
-mail -s "Milk step 1 done" wellermatt@hotmail.com < ../output/01_consolidate_category.output
+Rscript --vanilla 01_consolidate_category.R "carbbev"
 
+Rscript --vanilla 01_consolidate_category.R "fzdinent"
 
+Rscript --vanilla 01_consolidate_category.R "milk"

@@ -1,6 +1,7 @@
 
-qlogin -l h_vmem=12G
+qlogin -l h_vmem=5G -now no
 module add R
+module add intel
 R
 setwd("/home/users/wellerm/projects/exp1.1/batch_jobs")
 
