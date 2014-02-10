@@ -1,3 +1,4 @@
+
 setwd("C:/Users/Matt/Dropbox/HEC/code/exp1.1")
 rm(list=ls())
 library("ggplot2")
@@ -5,16 +6,17 @@ source("./config.R")
 setwd(pth.dropbox.code)  ; source("./GenericRoutines/f_pricing_functions.R")
 setwd(pth.dropbox.code)  ; source("./DataAdaptor/00_data_adaptor_test.R")
 
-spw = f_da.reg.cat.all(par.category="beer",par.periodicity = "weekly") ; gc()
-spw.store = spw[!is.na(IRI_KEY),c(1:15), with = FALSE]
-spw.store
-tables()
 
+spw = f_da.reg.cat.all(par.category="beer",par.periodicity = "weekly") ; gc()
+spw.store = spw[!is.na(IRI_KEY),list(UPC,chain,IRI_KEY,fc.item,WEEK,PRICE,PR)]  #, with = FALSE
+spw = NULL  ;  gc()  ;  tables()
+
+spw.store[,f_reference.prices_KM(PRICE,PR),by = fc.item]
 
 # examine chains with fractional average prices
 price.precision = spw.store[,list(chain, IRI_KEY, WEEK, PRICE, rounded.price = round(PRICE,2), deviation = PRICE - round(PRICE,2), rounded.TF = (PRICE != round(PRICE,2)))]
 ggplot(data=price.precision, aes(x = chain, fill = rounded.TF)) + geom_bar(position = "fill") + theme_bw() + coord_flip()
-ggplot(data=price.precision, aes(x = chain, y=deviation)) + geom_boxplot() + theme_bw() + coord_flip()
+ggplot(data=price.precision[deviation!=0], aes(x = chain, y=100*deviation)) + geom_boxplot() + theme_bw() + coord_flip()
 ggplot(data=price.precision[deviation!=0], aes(x=100*deviation)) + geom_histogram() + facet_wrap(~chain)
 ggplot(data=price.precision[deviation!=0]) + geom_density( aes(x=deviation)) + facet_wrap(~chain)
 
@@ -44,7 +46,7 @@ ggplot(data = dpv, aes(x=WEEK,y=price)) + geom_line() + geom_point(aes(colour = 
 
 
 
-prices2 = rbindlist(lapply(21:21,function(i)data.table(IRI_KEY = names(prices)[i], f_reference.prices(prices[[i]], PR.flag[[i]]))))
+prices2 = rbindlist(lapply(21:21,function(i)data.table(IRI_KEY = names(prices)[i], f_reference.prices_KM(prices[[i]], PR.flag[[i]]))))
 
 tail(prices2,100)
 

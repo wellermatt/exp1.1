@@ -1,4 +1,4 @@
-library(data.table) ; library(plyr)
+library("data.table") ; library("plyr") ; library("reshape2")
 
 Mode <- function(x) {
   ux <- unique(x)
@@ -33,11 +33,17 @@ f_reference.prices_KM = function(pt, PR, l = 5, C = (1/3), a = 0.5)
 				})
 	dt$pm[(1+l):(TT - l)] = pass1$pm
 	dt$ft[(1+l):(TT - l)] = pass1$ft
-	#pass1$pt = pt[(1+l):(TT - l)]
+	
+	# now start setting the reference price in a first pass *** bug?
 	dt$pr[l + 1] = if (pass1[1,1] == 0) pass1[1,4] else pass1[1,1]
 	for (t in (l + 2):(TT - l))
 	{        
-		if (dt$pm[t] != 0 & dt$ft[t] > C & dt$pt[t] == dt$pm[t]) dt$pr[t] = dt$pt[t] else dt$pr[t] = dt$pr[t-1]    
+		# if the actual price is missing then use the previous reference price
+		if (is.na(dt$pt[t]) & dt$ft[t] > C ) {
+			dt$pr[t] = dt$pr[t-1]
+		} else {
+			if (!is.na(dt$pm[t]) & dt$pm[t] != 0 & dt$ft[t] > C & dt$pt[t] == dt$pm[t]) dt$pr[t] = dt$pt[t] else dt$pr[t] = dt$pr[t-1]    
+		}
 	}
 	dt# RR - set of periods with regular price change
 	# 
