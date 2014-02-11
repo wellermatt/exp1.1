@@ -1,15 +1,19 @@
 # this script will handle the aggregation of a full dataset for a category to various levels.
 
 library(data.table)
-source("./scripts/memory_usage.R")
+source("../scripts/memory_usage.R")
 
 ## define the parameters for this procedure
 args <- commandArgs(trailingOnly = TRUE)
 print (args)
 
-par.category = args[1]  
+par.category = args[1]    # "diapers" # 
 
 f_consecutive.missing.values = function(weeks.avail) {
+
+	# potential to enhance performance of this function considerably
+	# http://stackoverflow.com/questions/5012516/count-how-many-consecutive-values-are-true
+
 	y = rep(0, max(weeks.avail) - min(weeks.avail)+1) 
 	y[weeks.avail] = 1
 	runs = rle(y)
@@ -24,16 +28,16 @@ f_consecutive.missing.values = function(weeks.avail) {
 f_iri.category.summarise = function(par.category,
                                     pth.trans = "/storage/users/wellerm/data/02_tf/sales/all/",
                                     pth.agg = "/storage/users/wellerm/data/03_agg/")
-    
+{    
     # function will aggregate the data for the whole category at multiple levels
     # currently the levels required cannot be parameterised and hence all are produced
     
     # this is the destination path for the summary files
-    pth.agg = paste0(pth.agg, par.category, "/"))
-    
+    dir.create(file.path(pth.agg, par.category))
+	pth.agg = paste0(pth.agg, par.category, "/")
 
     ## load the transformed data for the category (all years) and convert to a data table and output stats
-    fil =  paste(pth.trans, par.category, ".tf.all.rds", sep="") ; print(fil)
+    fil =  paste0(pth.trans, par.category, ".tf.all.rds") ; print(fil)
     da = readRDS(fil)
 
     # just do a memory check when the data has been loaded
@@ -121,5 +125,7 @@ f_iri.category.summarise = function(par.category,
     lsos()
     da = NULL ; dat.upc.horizon = NULL ; gc()
 }
+
+f_iri.category.summarise(par.category)
 
 print ("===== SCRIPT COMPLETED =====")

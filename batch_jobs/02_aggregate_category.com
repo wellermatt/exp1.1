@@ -14,4 +14,4 @@ module add R
 
 echo Job running on compute node `uname -n`
 
-Rscript --vanilla 02_aggregate_category.R "saltsnck"
+Rscript --vanilla 02_aggregate_category.R "diapers"
