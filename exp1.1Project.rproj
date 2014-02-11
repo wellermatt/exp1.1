@@ -32,6 +32,9 @@
     <Folder Include="scripts" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".Rprofile">
+      <SubType>Content</SubType>
+    </Content>
     <Content Include="config.R">
       <SubType>Content</SubType>
     </Content>
@@ -108,6 +111,12 @@
       <SubType>Content</SubType>
     </Content>
     <Content Include="GenericRoutines\useful_functions.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="junk\06_prepare_regression_data_functions.R">
+      <SubType>Content</SubType>
+    </Content>
+    <Content Include="junk\Script5.R">
       <SubType>Content</SubType>
     </Content>
     <Content Include="ModelFitting\ets\ets_functions.R">
