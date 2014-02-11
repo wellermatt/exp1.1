@@ -4,7 +4,7 @@ cd ~/projects/exp1.1/DataPrep
 #$ -l h_vmem=8.0G
 #$ -m e
 #$ -M wellermatt@hotmail.com
-#$ -q serial
+#$ -q test
 #$ -N mjw_job1
 
 source /etc/profile
@@ -14,5 +14,4 @@ module add R
 
 echo Job running on compute node `uname -n`
 
-R CMD BATCH --no-save 02_aggregate_category.R ../output/02_aggregate_category.output
-mail -s "step 2 done" wellermatt@hotmail.com  < ../output/02_aggregate_category.output
+Rscript --vanilla 02_aggregate_category.R "saltsnck"
