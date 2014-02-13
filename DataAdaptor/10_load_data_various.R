@@ -37,7 +37,7 @@ f_load.products = function(category, opt.fieldset = 1) {
 
 	# add the product attributes
 	setwd(pth.dropbox.data)
-	fil = paste("./iri reference data/items/prod_",par.category,".csv", sep = "")
+	fil = paste("./iri reference data/upc/prod_",par.category,".csv", sep = "")
 	upc.master = data.table(read.csv(fil, stringsAsFactors=FALSE))
 	if (opt.fieldset == 1) return(upc.master[, list(UPC,L9,VOL_EQ)])
 	

@@ -8,8 +8,6 @@
 #
 #
 
-rm(list=ls())
-
 f_load.stores.clean = function()
 ## load the cleaned list of stores with their related chain and market attributes
 {
@@ -18,7 +16,8 @@ f_load.stores.clean = function()
 }
 
 f_cleanse.data.1 = function(dat, upc = as.character(NA))
-##===  LOAD THE MAIN DATA FROM A SUBSET e.g. Top 10 Beer UPCs ================================
+
+    ##===  LOAD THE MAIN DATA FROM A SUBSET e.g. Top 10 Beer UPCs ================================
 {	
 	if (!is.na(upc)) { upc.list = unique(dat$UPC)   ; 	dat = dat[UPC == upc]  }
 	
@@ -40,26 +39,11 @@ f_cleanse.data.1 = function(dat, upc = as.character(NA))
 	
 	## tag the CHAIN and MARKET onto the main data for aggregation and generation of fc.item field
 	dat = droplevels(merge(dat, stores[,list(IRI_KEY, chain)], by="IRI_KEY", all.x = TRUE))
+    
 	## generate the fc.item field for all records and make it the unique key
 	dat = within(dat,expr = fc.item <- paste(UPC,chain,IRI_KEY,sep="/"))
 	keycols = c("fc.item","WEEK") ; setkeyv(dat,keycols)
  	
-	dat 
-}
-
-f_cleanse.data.2 = function(dat)
-{
-	##===  Further subset the data ================================
-	# THIS SHOULD MOVE INTO THE SUBSETTING FUNCTIONALITY
-	
-	fil = paste("./iri category subsets/unformatted/",par.category,"/", par.category,".subset.upc.store.horizon.rds", sep = "")
-	skul.h = data.table(readRDS(fil))
- 	skul.h = merge(skul.h, stores[,c(1:3), with =FALSE], by = "IRI_KEY")
-	sku.chain = skul.h[num_weeks>=300 & max_consecutive_missing <= 2, list(store.count = length(unique(IRI_KEY))) , by = c("UPC","chain")]
-	sku.chain = sku.chain[store.count>3, c(1,2), with = FALSE]
-	skul.h = merge(skul.h[num_weeks>=300 & max_consecutive_missing <= 2], sku.chain, by = c("UPC","chain"))
-	print(nrow(skul.h))
-	dat = merge(dat,skul.h[,list(UPC,IRI_KEY)], by = c("UPC","IRI_KEY"))
 	dat 
 }
 
@@ -198,23 +182,9 @@ f_data.aggregate.week.445 = function(dat.w, opt.weighted.mean = FALSE) {
 
 library(data.table) ; library(plyr) ; library(reshape)  ;  library(caret)
 
-machine = (Sys.info()["nodename"])
+setwd(pth.dropbox.code)  ;  source("./DataAdaptor/10_load_data_various.R")
 
-pth.dropbox = "/home/users/wellerm/"
-if (machine == "M11") pth.dropbox = "C:/Users/Matt/Dropbox/"
-if (machine == "DESKTOP") pth.dropbox = "D:/Dropbox/Dropbox/"
-if (machine == "IDEA-PC") pth.dropbox = "C:/Users/welle_000/Dropbox/"
-
-pth.dropbox.data = paste(pth.dropbox, "HEC/IRI_DATA/", sep = "")
-pth.dropbox.code = paste(pth.dropbox, "HEC/Code/exp1.1/", sep = "")
-if (pth.dropbox == "/home/users/wellerm/") {
-	pth.dropbox.data = paste(pth.dropbox, "IRI_DATA/", sep = "")
-	pth.dropbox.code = paste(pth.dropbox, "projects/exp1.1/", sep = "")
-}
-
-setwd(pth.dropbox.code)  ;  source("./DataPrep/10_load_data_various.R")
-
-categories = c("beer","carbbev","milk")
+categories = c("razors")
 for (par.category in categories)
 {
 	setwd(pth.dropbox.data)
@@ -227,7 +197,7 @@ for (par.category in categories)
 
 	stores = f_load.stores.clean()
 	dat.cat.1 = f_cleanse.data.1(dat.cat.1)    # this will create the fc.item field and tags on the chain and market which are used for aggregation
-	dat.cat.1 = f_cleanse.data.2(dat.cat.1)    # this will subset further based on the summary stats of the subset
+	#dat.cat.1 = f_cleanse.data.2(dat.cat.1)    # this will subset further based on the summary stats of the subset
 	fc.items = f_generate.fc.items(dat.cat.1)
 	fc.items[,.N,by=list(lvl)]
 

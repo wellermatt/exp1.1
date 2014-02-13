@@ -128,4 +128,13 @@ f_iri.category.summarise = function(par.category,
 
 f_iri.category.summarise(par.category)
 
+
+if (TEST = TRUE) {
+    pth.trans = paste0(pth.dropbox.data, "tf-test/")
+    pth.agg = "C:/Users/Matt/Dropbox/HEC/IRI_DATA/iri category summaries/"
+    f_iri.category.summarise(par.category, pth.trans, pth.agg)
+}
+
+
+
 print ("===== SCRIPT COMPLETED =====")
