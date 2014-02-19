@@ -147,7 +147,8 @@ f_level3_promo_dummies = function(dat)
 }
 
 f_data.aggregate.week.445 = function(dat.w, opt.weighted.mean = FALSE) {
-  
+
+    # after generating the weekly file with no gaps and dummies
 	calendar.weekly <<- readRDS("./iri reference data/calendar/calendar.weekly.rds")
 	calendar.map.week.445 = calendar.weekly[,list(WEEK, period_id)]
 	dat.w = merge(calendar.map.week.445,dat.w, by = "WEEK")
@@ -227,3 +228,6 @@ for (par.category in categories)
 # some analysis to identify missing values by chain/store
 # dcast(sp.cat,UPC+WEEK~chain,fun.aggregate=function(x)sum(is.na(x)),value.var="UNITS")
 # head(dcast(sp.cat,chain+IRI_KEY~WEEK,fun.aggregate=function(x)sum(is.na(x)),value.var="UNITS"))
+
+
+

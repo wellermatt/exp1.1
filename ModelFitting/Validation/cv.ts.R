@@ -161,9 +161,7 @@ cv.ts <- function(x, FUN, tsControl=tseriesControl(), xreg=NULL, progress=TRUE, 
 			out <- FUN(xshort, h=maxHorizon, 
                 xreg=xregshort, newxreg=newxreg, ...)
       
-      if (preProcess) {
-        out <- InvBoxCox(out, stepLambda)
-      }
+      if (preProcess) out <- InvBoxCox(out, stepLambda)
 
       return(out)
 		}

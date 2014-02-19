@@ -1,5 +1,6 @@
 # this procedure needs considerable overhaul to make it quicker and allow more flexible subsetting
 # should accept parameters for:
+
     # the minimum number of weeks required and/or start/end week for the item
     # the minimum number of weeks required and/or start/end week for the item/store
     # the minimum number of stores in a chain to allow inclusion
