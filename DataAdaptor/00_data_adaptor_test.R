@@ -13,7 +13,8 @@ f_da.reg.cat.all = function(par.category, par.periodicity, par.item="00-01-18200
 	# get an input dataset for regression for a whole category
 	# optionally split it for a single item
 	# optionally save it to a subset file as a test regression file	
-	fil = paste("./regression datasets/", par.category, ".regression.data.", par.periodicity, ".rds", sep= "")
+    setwd(pth.dropbox.data)
+    fil = paste("./regression datasets/", par.category, ".regression.data.", par.periodicity, ".rds", sep= "")
 	sp = readRDS(fil)
 	if (!is.null(par.item) & bo.save == TRUE) {
 		sp = sp[UPC==par.item]
@@ -26,7 +27,8 @@ f_da.reg.cat.all = function(par.category, par.periodicity, par.item="00-01-18200
 
 f_da.reg.cat.test = function(par.category, par.periodicity) {
 	
-	fil = paste("./regression datasets/", par.category, ".test.regression.data.", par.periodicity, ".rds", sep= "")
+    setwd(pth.dropbox.data)
+    fil = paste("./regression datasets/", par.category, ".test.regression.data.", par.periodicity, ".rds", sep= "")
 	sp = readRDS(fil)
 	sp
 }
