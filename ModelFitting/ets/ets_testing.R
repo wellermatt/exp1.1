@@ -1,5 +1,5 @@
 
-# rm(list=ls())
+rm(list=ls())
 getwd()
 #setwd()
 source('D:/Dropbox/Dropbox/HEC/Code/exp1.1/.Rprofile')
@@ -24,7 +24,7 @@ items = spm[,as.character(unique(fc.item))]
 
 #=============== TESTING =================
 test.single = FALSE
-test.multi = TRUE
+test.multi = FALSE
 
 if (test.single == TRUE) {
     item.id=2
@@ -46,8 +46,16 @@ if (test.multi == TRUE) {
     #saveRDS(object=rbindlist(multi.item.results),file="errors.rds")
 }
 
+library(stringr)
+setwd(pth.dropbox.data) ; Err2 = readRDS("errors.rds")
 
-Err2 = readRDS("errors.rds")
+Err3 = data.table(dcast(data=Err2,formula=fc.item~k,fun.aggregate=median,value.var="rae"))
+Err3[,lvl := str_count( fc.item, "/")+1 ]
+Err3.melt = data.table(melt(Err3,variable.name = "k", id=c("fc.item","lvl")))
 
-Err3 = data.table(dcast(data=Err2,formula=fc.item~k,fun.aggregate=mean,value.var="rae"))
-Err3[,lvl := length(grep("/", fc.item))]
+qplot(data = Err3.melt,y=value, x=factor(lvl), geom="boxplot") + geom_jitter()
+qplot(data = Err3.melt[lvl>1],x=value, colour=factor(lvl), geom="density") 
+qplot(data = Err3.melt,x=value, geom="histogram") + facet_wrap(facets=~lvl, ncol=1)
+
+#f_summary.plots(Err)
+#Err

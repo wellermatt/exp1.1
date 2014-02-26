@@ -175,7 +175,5 @@ f_summary.plots = function(Err) {
     Err[,list(n=length(y), me = mean(e), mae = mean(ae), mrae = mean(re)),by=list(k)]
 }
 
-f_summary.plots(Err)
-Err
 
 

@@ -7,22 +7,28 @@ f_ts.fourier.terms.for.formula = function(k)
 	rhs
 }
 
-f_ts.regression.fourier.k.test = function(k, dt) 
-# tests a specific data set containing harmonic variables using a formula containing k SIN/COS terms for significance of the last term
+f_ts.regression.fourier.k.test = function(k, dt, p.include = 0.05) 
+# tests a specific data set containing harmonic variables using a formula 
+# containing k SIN/COS terms for significance of the last term
 {  
 	rhs = f_ts.fourier.terms.for.formula(k)
-	frm = paste("UNITS ~ ", rhs)  
+    frm = paste("UNITS ~ ", rhs)  
+        
 	# extract the significant coefficents and identify whether the last term added is significant
-	coef = f_ts.diag.coef.table(lm(frm, data = dt))
-	sig.fourier = coef[p.val<0.05 & variable !="(Intercept)"]$variable
+	coef(lm(frm, data = dt))
+    coef = f_ts.diag.coef.table(lm(frm, data = dt))
+	
+    sig.fourier = coef[p.val < p.include & variable !="(Intercept)"]$variable
 	cf.sig.periods = length(as.numeric(unique(sapply(strsplit(sig.fourier, "_"), "[[", 2))))
 	significant.term = FALSE
 	if (k == cf.sig.periods) significant.term = TRUE
 	significant.term
 }
 
+
 f_ts.regression.fourier.k.optimise = function(dt) 
-#  determine the optimal number of harmonic terms for a specific dataset with the harmonic terms already included
+#  determine the optimal number of harmonic terms for a specific dataset 
+#  with the harmonic terms already included
 {
 	max.k = max(as.integer(gsub("SIN_", "", grep("SIN_", names(dt), value = TRUE))))
 	for (k in 1:max.k) {
@@ -96,34 +102,41 @@ f_ts.regression.data.reduce.formula = function(dt, frm)
 }
 
 
-f_ts.regression.auto.step = function(dt)   #, intercept = TRUE, include.AR.terms = FALSE, log.model = FALSE, price.terms = "PRICE"
-## this is the stepwise function which will accept 								
-{ 
+f_ts.regression.auto.stepAIC = function(dt)   
+## this is the stepwise function which will accept 	
+#, intercept = TRUE, include.AR.terms = FALSE, log.model = FALSE, price.terms = "PRICE"
+
+    { 
 	# get the lower and upper bounds of the formulae based on the variable inclusion parameters
 	k.optimal = f_ts.regression.fourier.k.optimise(dt) 
 	step.frm = f_ts.regression.auto.formulae.scope(dt, k.optimal)
 	
 	## build the regression data set with all names variables in the RHS including including those in the formula to be employed
 	dt.reg <<- f_ts.regression.data.reduce.formula (dt, frm = step.frm$frm.upper) 
-	dt.reg <<- na.omit(dt.reg)
+	dt.reg <<- na.omit(dt.reg) ## this can be an issue with time series forecasting!!
 	
 	base.model = lm(step.frm$frm.base, dt.reg)
 	upper.model = lm(step.frm$frm.upper, dt.reg)
 
 	## use STEPWISE procedure stepAIC to get the model with the lowest AIC value
-	stepAIC(object = base.model, trace = 0, scope = list(lower = base.model, upper = upper.model))
+	out.model = stepAIC(object = base.model, trace = 0, scope = list(lower = base.model, upper = upper.model))
+    
+    # maybe extend here a little?
+    
+    
+    out.model
 }
 
 
-f_ts.model.regression = function(my.model = NULL,
-                                 opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE,
-                                 opt.print.stats = TRUE, opt.print.coef = TRUE,
-                                 include.AR.terms = FALSE) 
+f_ts.regression.model.summarise = 
+    function(my.model = NULL, include.AR.terms = FALSE,
+             opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE,
+             opt.print.stats = TRUE, opt.print.coef = TRUE) 
   
 # this function can take a model and will calculate accuracy stats, coefficients, elasticities for it.  
 # Will also output the relevant information for the user.
 {    
-  ### RECORD THE ACCURACY STATS
+  ### RECORD THE ACCURACY STATS FROM FIT SAMPLE
   stats = f_ts.eval.accuracy.ext(model.lm = my.model) #, y = y)
   stats$average = mean(df$UNITS)
   stats = cbind(fc.item = fc.item,freq = freq,  #, chain = chain, store = store, 
@@ -133,15 +146,16 @@ f_ts.model.regression = function(my.model = NULL,
                 stats)
   stats = data.table(stats)
   
-  ### STORE THE COEFFICIENTS
-  coef = f_ts.diag.coef.table (my.model = my.model)
+  ### STORE THE COEFFICIENTS FROM FIT 
+  # consider reviewing the trace from stepAIC
+  coef =  f_ts.diag.coef.table(my.model = my.model)
   coef = cbind(fc.item = fc.item, freq = freq,  # chain = chain, store = store,
                AR.terms = include.AR.terms,
                frm = as.character.formula(frm),
                coef)
   coef = data.table(coef)
   
-  ## STORE THE ELASTICITIES
+  ## STORE THE ELASTICITIES FOR INITIAL PARAMTER ESTIMATES
   stats$elast = f_ts.regression.elast(y.hat = my.model$fitted.values, variable.name="PRICE", coef)
     
   ### PRINTING OPTIONS
